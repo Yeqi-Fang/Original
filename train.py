@@ -4,6 +4,7 @@ import torch.nn as nn
 import time
 import numpy as np
 from tqdm import tqdm
+from torch.amp import autocast, GradScaler
 import matplotlib.pyplot as plt
 from utils import save_slices, calculate_metrics, log_metrics
 
@@ -16,6 +17,8 @@ def train_one_epoch(model, train_loader, optimizer, criterion, device, epoch):
     start_time = time.time()
     progress_bar = tqdm(train_loader, desc=f"Epoch {epoch} [Train]")
     
+    scaler = GradScaler('cuda')
+    
     for batch in progress_bar:
         # Get data
         incomplete = batch['incomplete'].to(device)
@@ -23,12 +26,17 @@ def train_one_epoch(model, train_loader, optimizer, criterion, device, epoch):
         
         # Forward pass
         optimizer.zero_grad()
-        outputs = model(incomplete)
-        loss = criterion(outputs, complete)
+        with autocast(device_type='cuda'):
+            outputs = model(incomplete)
+            loss = criterion(outputs, complete)
         
         # Backward pass and optimize
-        loss.backward()
-        optimizer.step()
+        
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+        # loss.backward()
+        # optimizer.step()
         
         # Update statistics
         batch_loss = loss.item()
