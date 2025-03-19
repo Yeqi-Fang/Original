@@ -60,7 +60,7 @@ def main(args):
     
     # Create model
     model = UNETR(
-        img_shape=(128, 128, 80),  # Match dataset dimensions
+        img_shape=(80, 128, 128),  # Match dataset dimensions
         input_dim=1,               # Single channel input
         output_dim=1,              # Single channel output
         embed_dim=args.embed_dim,
