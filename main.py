@@ -138,13 +138,13 @@ def main(args):
         is_best = val_loss < best_val_loss
         best_val_loss = min(val_loss, best_val_loss)
         
-        save_checkpoint(
-            model=model,
-            optimizer=optimizer,
-            epoch=epoch+1,
-            loss=val_loss,
-            path=os.path.join(log_dir, f'checkpoint_epoch_{epoch+1:03d}.pth')
-        )
+        # save_checkpoint(
+        #     model=model,
+        #     optimizer=optimizer,
+        #     epoch=epoch+1,
+        #     loss=val_loss,
+        #     path=os.path.join(log_dir, f'checkpoint_epoch_{epoch+1:03d}.pth')
+        # )
         
         if is_best:
             best_path = os.path.join(log_dir, 'best_model.pth')

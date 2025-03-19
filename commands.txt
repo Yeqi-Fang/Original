@@ -1,4 +1,4 @@
 python main.py --train-incomplete-dir /mnt/d/fyq/sinogram/reconstruction_npy_full_train/2000000000/listmode_i/reconstruction_incomplete --train-complete-dir /mnt/d/fyq/sinogram/reconstruction_npy_full_train/2000000000 --test-incomplete-dir /mnt/d/fyq/sinogram/reconstruction_npy_full_test/2000000000/listmode_i/reconstruction_incomplete --test-complete-dir /mnt/d/fyq/sinogram/reconstruction_npy_full_test/2000000000 --batch-size 2 --epochs 100 --lr 1e-4
 
 
-python main.py --batch-size 2 --epochs 100 --lr 1e-4 --loss l1
+python main.py --batch-size 4 --epochs 50 --lr 1e-4 
