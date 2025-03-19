@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 class PETDataset(Dataset):
-    """Dataset for incomplete and complete PET image pairs"""
+    """Dataset for incomplete and complete PET image pairs with preloading"""
     def __init__(self, incomplete_dir, complete_dir, transform=None):
         """
         Args:
@@ -20,6 +20,35 @@ class PETDataset(Dataset):
         self.files = [f for f in os.listdir(incomplete_dir) if f.endswith('.npy')]
         print(f"Found {len(self.files)} files in dataset")
         
+        # Pre-load all data into memory as float16
+        self.incomplete_data = {}
+        self.complete_data = {}
+        
+        print("Preloading dataset into memory (float16)...")
+        for i, file_name in enumerate(self.files):
+            if i % 20 == 0:
+                print(f"  Loading {i}/{len(self.files)} files...")
+            
+            incomplete_path = os.path.join(incomplete_dir, file_name)
+            complete_path = os.path.join(complete_dir, file_name)
+            
+            try:
+                # Load and convert to float16 to save memory
+                incomplete_img = np.load(incomplete_path).astype(np.float16)
+                complete_img = np.load(complete_path).astype(np.float16)
+                
+                # Store in dictionaries
+                self.incomplete_data[file_name] = incomplete_img
+                self.complete_data[file_name] = complete_img
+            except Exception as e:
+                print(f"Error loading file {file_name}: {e}")
+                # Create a dummy sample in case of error
+                dummy = np.zeros((128, 128, 80), dtype=np.float16)
+                self.incomplete_data[file_name] = dummy
+                self.complete_data[file_name] = dummy
+        
+        print("Dataset preloaded into memory")
+        
     def __len__(self):
         return len(self.files)
     
@@ -30,36 +59,22 @@ class PETDataset(Dataset):
         # Get file name
         file_name = self.files[idx]
         
-        # Load incomplete and complete PET images
-        incomplete_path = os.path.join(self.incomplete_dir, file_name)
-        complete_path = os.path.join(self.complete_dir, file_name)
+        # Get pre-loaded data and convert to float32 (from float16)
+        incomplete_img = self.incomplete_data[file_name]
+        complete_img = self.complete_data[file_name]
         
-        # Load numpy arrays
-        try:
-            incomplete_img = np.load(incomplete_path)
-            complete_img = np.load(complete_path)
+        # Convert numpy arrays to torch tensors (float32) and add channel dimension
+        incomplete_img = torch.from_numpy(incomplete_img.astype(np.float32)).unsqueeze(0)  # [1, 128, 128, 80]
+        complete_img = torch.from_numpy(complete_img.astype(np.float32)).unsqueeze(0)      # [1, 128, 128, 80]
+        
+        # Prepare sample
+        sample = {
+            'incomplete': incomplete_img, 
+            'complete': complete_img, 
+            'filename': file_name
+        }
+        
+        if self.transform:
+            sample = self.transform(sample)
             
-            # Convert to tensors and add channel dimension
-            incomplete_img = torch.from_numpy(incomplete_img).float().unsqueeze(0)  # [1, 128, 128, 80]
-            complete_img = torch.from_numpy(complete_img).float().unsqueeze(0)      # [1, 128, 128, 80]
-            
-            # Normalize if needed (optional - comment out if data is already normalized)
-            # incomplete_img = (incomplete_img - incomplete_img.min()) / (incomplete_img.max() - incomplete_img.min() + 1e-8)
-            # complete_img = (complete_img - complete_img.min()) / (complete_img.max() - complete_img.min() + 1e-8)
-            
-            sample = {
-                'incomplete': incomplete_img, 
-                'complete': complete_img, 
-                'filename': file_name
-            }
-            
-            if self.transform:
-                sample = self.transform(sample)
-                
-            return sample
-            
-        except Exception as e:
-            print(f"Error loading file {file_name}: {e}")
-            # Return a dummy sample in case of error
-            dummy = torch.zeros((1, 128, 128, 80))
-            return {'incomplete': dummy, 'complete': dummy, 'filename': file_name}
+        return sample
