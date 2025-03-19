@@ -35,11 +35,11 @@ class PETDataset(Dataset):
         self.files = list(self.incomplete_to_complete.keys())
         print(f"Found {len(self.files)} valid file pairs in dataset")
         
-        # Pre-load all data into memory as float16
+        # Pre-load all data into memory as float32
         self.incomplete_data = {}
         self.complete_data = {}
         
-        print("Preloading dataset into memory (float16)...")
+        print("Preloading dataset into memory (float32)...")
         for i, inc_file in enumerate(self.files):
             if i % 20 == 0:
                 print(f"  Loading {i}/{len(self.files)} file pairs...")
@@ -49,9 +49,9 @@ class PETDataset(Dataset):
             complete_path = os.path.join(complete_dir, comp_file)
             
             try:
-                # Load and convert to float16 to save memory
-                incomplete_img = np.load(incomplete_path).astype(np.float16)
-                complete_img = np.load(complete_path).astype(np.float16)
+                # Load and convert to float32 to save memory
+                incomplete_img = np.load(incomplete_path).astype(np.float32)
+                complete_img = np.load(complete_path).astype(np.float32)
                 
                 # Store in dictionaries
                 self.incomplete_data[inc_file] = incomplete_img
