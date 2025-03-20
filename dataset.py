@@ -73,7 +73,7 @@ class PETDataset(Dataset):
         # Get file name (incomplete version)
         inc_file = self.files[idx]
         
-        # Get pre-loaded data and convert to float32 (from float16)
+        # Get pre-loaded data and convert to float32 
         incomplete_img = self.incomplete_data[inc_file]
         complete_img = self.complete_data[inc_file]
         

@@ -36,7 +36,7 @@ def load_checkpoint(model, optimizer, path):
     print(f"Loaded checkpoint from {path} (epoch {epoch})")
     return model, optimizer, epoch, loss
 
-def save_slices(volume, save_path, title=None, vmin=None, vmax=None):
+def save_slices(volume, save_path, title=None):
     """
     Save X, Y, Z slices of a 3D volume as a single image
     Args:
@@ -56,19 +56,19 @@ def save_slices(volume, save_path, title=None, vmin=None, vmax=None):
     
     # X-direction slice (sagittal)
     x_center = volume.shape[0] // 2
-    axs[0].imshow(volume[x_center, :, :], cmap='magma', interpolation='nearest', vmin=vmin, vmax=vmax)
+    axs[0].imshow(volume[x_center, :, :], cmap='magma', interpolation='nearest')
     axs[0].set_title(f'Sagittal Slice (X={x_center})')
     axs[0].axis('off')
     
     # Y-direction slice (coronal)
     y_center = volume.shape[1] // 2
-    axs[1].imshow(volume[:, y_center, :], cmap='magma', interpolation='nearest', vmin=vmin, vmax=vmax)
+    axs[1].imshow(volume[:, y_center, :], cmap='magma', interpolation='nearest')
     axs[1].set_title(f'Coronal Slice (Y={y_center})')
     axs[1].axis('off')
     
     # Z-direction slice (axial)
     z_center = volume.shape[2] // 2
-    axs[2].imshow(volume[:, :, z_center], cmap='magma', interpolation='nearest', vmin=vmin, vmax=vmax)
+    axs[2].imshow(volume[:, :, z_center], cmap='magma', interpolation='nearest')
     axs[2].set_title(f'Axial Slice (Z={z_center})')
     axs[2].axis('off')
     
